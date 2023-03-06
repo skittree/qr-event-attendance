@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using register_app.Areas.Identity.Pages.Account;
 using register_app.Data.Models;
 using register_app.ViewModels;
 
@@ -29,6 +30,10 @@ namespace register_app.Configuration
             CreateMap<Attendee, AttendeeDeleteViewModel>();
             CreateMap<AttendeeCreateViewModel, Attendee>();
             CreateMap<AttendeeEditViewModel, Attendee>();
+
+
+            CreateMap<IdentityUser, AccountViewModel>()
+                .ForMember(x => x.User, opt => opt.MapFrom(src => src));
         }
     }
 }

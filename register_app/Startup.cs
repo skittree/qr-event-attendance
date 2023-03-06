@@ -54,6 +54,7 @@ namespace register_app
             services.AddSingleton(mapper);
             services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IAdminService, AdminService>();
 
             InitializeRoles(services);
             InitializeAdmin(services);
