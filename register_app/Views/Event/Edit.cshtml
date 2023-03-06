@@ -1,0 +1,40 @@
+﻿@model register_app.ViewModels.EventEditViewModel
+@{
+    ViewData["Title"] = "Editing "+Model.Name;
+}
+
+<h1>Editing @Model.Name</h1>
+
+<form asp-action="Edit" asp-controller="Event" method="POST">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" type="text" class="form-control" />
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <input asp-for="Description" type="text" class="form-control" />
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="StartTime"></label>
+            <input asp-for="StartTime" type="datetime-local" class="form-control" />
+            <span class="text-danger" asp-validation-for="StartTime"></span>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label asp-for="EndTime"></label>
+            <input asp-for="EndTime" type="datetime-local" class="form-control" />
+            <span class="text-danger" asp-validation-for="EndTime"></span>
+        </div>
+    </div>
+
+    <div class="flex-lg-row">
+        <a asp-controller="Event" asp-action="Index" class="btn btn-secondary">< Back</a>
+        <button class="btn btn-primary" type="submit">Edit Event</button>
+    </div>
+</form>

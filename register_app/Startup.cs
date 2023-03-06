@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using register_app.Configuration;
 using register_app.Data;
+using register_app.Data.Roles;
+using register_app.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,11 +34,15 @@ namespace register_app
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+                options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()
+                .AddDefaultUI();
             services.AddControllersWithViews();
             services.AddRazorPages();
-
+            
 
             var mapperConfig = new MapperConfiguration(mc =>
             {
@@ -45,8 +51,12 @@ namespace register_app
 
             var mapper = mapperConfig.CreateMapper();
 
+            services.AddSingleton(mapper);
+            /*services.AddScoped<IAttendeeService, AttendeeService>();*/
+            services.AddScoped<IEventService, EventService>();
 
-
+            InitializeRoles(services);
+            InitializeAdmin(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,6 +88,70 @@ namespace register_app
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+        }
+
+        private void InitializeRoles(IServiceCollection services)
+        {
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                try
+                {
+                    var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
+
+                    foreach (var role in Roles.AllRoles)
+                    {
+                        if (roleManager.Roles.Any(x => x.Name == role))
+                        {
+                            continue;
+                        }
+
+                        var result = roleManager.CreateAsync(
+                            new IdentityRole
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                Name = role
+                            }).Result;
+                    }
+                }
+                catch (Exception)
+                {
+                    return;
+                }
+            }
+        }
+
+        private void InitializeAdmin(IServiceCollection services)
+        {
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                try
+                {
+                    var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
+
+                    if (userManager.Users.Any(x => x.UserName == "admin"))
+                    {
+                        return;
+                    }
+
+                    var identityResult = userManager.CreateAsync(
+                        new IdentityUser
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Email = "admin",
+                            UserName = "admin",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                        },
+                        "P@ssw0rd").Result;
+
+                    var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "admin");
+                    var result = userManager.AddToRoleAsync(adminUser, "Admin").Result;
+                }
+                catch (Exception)
+                {
+                    return;
+                }
+            }
         }
     }
 }
