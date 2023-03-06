@@ -32,9 +32,9 @@ namespace register_app.Controllers
 
         // GET: AttendeeController/Create
         [Authorize]
-        public IActionResult Create(int id)
+        public async Task<IActionResult> Create(int id)
         {
-            var model = AttendeeService.GetCreateViewModel(id);
+            var model = await AttendeeService.GetCreateViewModelAsync(id);
             return View(model);
         }
 
@@ -45,13 +45,13 @@ namespace register_app.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var createViewModel = AttendeeService.GetCreateViewModel(model.EventId);
+                var createViewModel = AttendeeService.GetCreateViewModelAsync(model.EventId);
                 return View(createViewModel);
             }
             try
             {
                 await AttendeeService.CreateAsync(model, User);
-                return RedirectToAction("Index", new { Id = model.EventId });
+                return RedirectToAction("Details", "Event", new { Id = model.EventId });
             }
             catch (ArgumentNullException)
             {
@@ -85,7 +85,7 @@ namespace register_app.Controllers
             try
             {
                 await AttendeeService.EditAsync(model, User);
-                return RedirectToAction("Index", new { Id = model.EventId });
+                return RedirectToAction("Details", "Event", new { Id = model.EventId });
             }
             catch (ArgumentNullException)
             {
@@ -119,7 +119,7 @@ namespace register_app.Controllers
             try
             {
                 await AttendeeService.DeleteAsync(model, User);
-                return RedirectToAction("Index", new { Id = model.EventId });
+                return RedirectToAction("Details", "Event", new { Id = model.EventId });
             }
             catch (ArgumentNullException)
             {

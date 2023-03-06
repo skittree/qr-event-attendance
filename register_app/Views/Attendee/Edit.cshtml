@@ -1,0 +1,36 @@
+﻿@model register_app.ViewModels.AttendeeEditViewModel
+
+<h1>Editing message</h1>
+
+<form asp-action="Edit" asp-controller="Attendee" method="POST">
+    <input type="hidden" asp-for="EventId" />
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" type="text" class="form-control" />
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" type="text" class="form-control" />
+        <span class="text-danger" asp-validation-for="Email"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Key"></label>
+        <input asp-for="Key" type="text" class="form-control" />
+        <span class="text-danger" asp-validation-for="Key"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TimeArrived"></label>
+        <input asp-for="TimeArrived" type="datetime-local" class="form-control" />
+        <span class="text-danger" asp-validation-for="TimeArrived"></span>
+    </div>
+
+    <div class="flex-lg-row">
+        <a asp-controller="Event" asp-action="Details" asp-route-id="@Model.EventId" class="btn btn-secondary">< Back</a>
+        <button class="btn btn-primary" type="submit">Edit Attendee</button>
+    </div>
+</form>

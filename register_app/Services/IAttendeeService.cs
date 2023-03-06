@@ -17,7 +17,7 @@ namespace register_app.Services
         Task<AttendeeEditViewModel> GetEditViewModelAsync(int id, ClaimsPrincipal user);
         Task<AttendeeDeleteViewModel> GetDeleteViewModelAsync(int id, ClaimsPrincipal user);
         Task<List<AttendeeViewModel>> GetIndexViewModelAsync(int id);
-        AttendeeCreateViewModel GetCreateViewModel(int? id);
+        Task<AttendeeCreateViewModel> GetCreateViewModelAsync(int? id);
         Task CreateAsync(AttendeeCreateViewModel model, ClaimsPrincipal user);
         Task EditAsync(AttendeeEditViewModel model, ClaimsPrincipal user);
         Task DeleteAsync(AttendeeDeleteViewModel model, ClaimsPrincipal user);
@@ -54,9 +54,19 @@ namespace register_app.Services
             return model;
         }
 
-        public AttendeeCreateViewModel GetCreateViewModel(int? id)
+        public async Task<AttendeeCreateViewModel> GetCreateViewModelAsync(int? id)
         {
-            return new AttendeeCreateViewModel { EventId = id };
+            var event_ = await Context.Events
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (event_ == null)
+            {
+                throw new ArgumentNullException(nameof(event_));
+            }
+
+            var createViewModel = Mapper.Map<AttendeeCreateViewModel>(event_);
+
+            return createViewModel;
         }
 
         public async Task<AttendeeEditViewModel> GetEditViewModelAsync(int id, ClaimsPrincipal user)
