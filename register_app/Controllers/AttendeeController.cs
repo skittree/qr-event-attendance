@@ -1,82 +1,129 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using register_app.Services;
+using register_app.ViewModels;
+using System;
+using System.Threading.Tasks;
 
 namespace register_app.Controllers
 {
     public class AttendeeController : Controller
     {
-        // GET: AttendeeController
-        public ActionResult Index()
+        private IAttendeeService AttendeeService { get; }
+        public AttendeeController(IAttendeeService attendeeService)
         {
-            return View();
+            AttendeeService = attendeeService;
         }
 
-        // GET: AttendeeController/Details/5
-        public ActionResult Details(int id)
+        // GET: AttendeeController
+        public async Task<ActionResult> Index(int id)
         {
-            return View();
+            try
+            {
+                var indexViewModel = await AttendeeService.GetIndexViewModelAsync(id);
+                return View(indexViewModel);
+            }
+            catch (ArgumentNullException)
+            {
+                return NotFound();
+            }
         }
 
         // GET: AttendeeController/Create
-        public ActionResult Create()
+        [Authorize]
+        public IActionResult Create(int id)
         {
-            return View();
+            var model = AttendeeService.GetCreateViewModel(id);
+            return View(model);
         }
 
         // POST: AttendeeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create(AttendeeCreateViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                var createViewModel = AttendeeService.GetCreateViewModel(model.EventId);
+                return View(createViewModel);
+            }
             try
             {
-                return RedirectToAction(nameof(Index));
+                await AttendeeService.CreateAsync(model, User);
+                return RedirectToAction("Index", new { Id = model.EventId });
             }
-            catch
+            catch (ArgumentNullException)
             {
-                return View();
+                return NotFound();
             }
         }
 
         // GET: AttendeeController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            try
+            {
+                var editViewModel = await AttendeeService.GetEditViewModelAsync(id, User);
+                return View(editViewModel);
+            }
+            catch (ArgumentNullException)
+            {
+                return NotFound();
+            }
         }
 
         // POST: AttendeeController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(AttendeeEditViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
             try
             {
-                return RedirectToAction(nameof(Index));
+                await AttendeeService.EditAsync(model, User);
+                return RedirectToAction("Index", new { Id = model.EventId });
             }
-            catch
+            catch (ArgumentNullException)
             {
-                return View();
+                return NotFound();
             }
         }
 
         // GET: AttendeeController/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            try
+            {
+                var deleteViewModel = await AttendeeService.GetDeleteViewModelAsync(id, User);
+                return View(deleteViewModel);
+            }
+            catch (ArgumentNullException)
+            {
+                return NotFound();
+            }
         }
 
         // POST: AttendeeController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> Delete(AttendeeDeleteViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
             try
             {
-                return RedirectToAction(nameof(Index));
+                await AttendeeService.DeleteAsync(model, User);
+                return RedirectToAction("Index", new { Id = model.EventId });
             }
-            catch
+            catch (ArgumentNullException)
             {
-                return View();
+                return NotFound();
             }
         }
     }

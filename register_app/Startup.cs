@@ -52,7 +52,7 @@ namespace register_app
             var mapper = mapperConfig.CreateMapper();
 
             services.AddSingleton(mapper);
-            /*services.AddScoped<IAttendeeService, AttendeeService>();*/
+            services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IEventService, EventService>();
 
             InitializeRoles(services);
