@@ -24,15 +24,11 @@ namespace register_app.Configuration
                 .ForMember(x => x.Event, opt => opt.MapFrom(src => src))
                 .ForMember(x => x.EventId, opt => opt.MapFrom(src => src.Id));
 
-
             CreateMap<Attendee, AttendeeViewModel>();
             CreateMap<Attendee, AttendeeEditViewModel>();
             CreateMap<Attendee, AttendeeDeleteViewModel>();
             CreateMap<AttendeeCreateViewModel, Attendee>();
             CreateMap<AttendeeEditViewModel, Attendee>();
-
-
-
         }
     }
 }

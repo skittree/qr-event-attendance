@@ -7,6 +7,7 @@ namespace register_app.ViewModels
 {
     public class EventEditViewModel
     {
+        public int Id { get; set; }
         [Required(ErrorMessage = "Event name cannot be empty.")]
         [Display(Name = "Event Name")]
         public string Name { get; set; }

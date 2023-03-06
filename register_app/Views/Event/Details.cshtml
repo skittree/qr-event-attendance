@@ -1,0 +1,13 @@
+﻿@model register_app.ViewModels.EventViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<h1>@Model.Name</h1>
+@Model.StartTime to @Model.EndTime
+<div class="text-info">@Model.Description</div>
+<hr>
+duration: @(Model.EndTime-Model.StartTime)
+
+
+
