@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace register_app.Controllers
 {
+    [Authorize(Roles = "Admin, Security, Organiser")]
     public class EventController : Controller
     {
         private IEventService EventService { get; }
@@ -37,7 +38,7 @@ namespace register_app.Controllers
         }
 
         // GET: EventController/Create
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpGet]
         public IActionResult Create()
         {
@@ -46,7 +47,7 @@ namespace register_app.Controllers
         }
 
         // POST: EventController/Create
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EventCreateViewModel model)
@@ -68,7 +69,7 @@ namespace register_app.Controllers
         }
 
         // GET: EventController/Edit/5
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -84,7 +85,7 @@ namespace register_app.Controllers
         }
 
         // POST: EventController/Edit/5
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EventEditViewModel model)
@@ -106,7 +107,7 @@ namespace register_app.Controllers
 
 
         // GET: EventController/Delete/5
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -122,7 +123,7 @@ namespace register_app.Controllers
         }
 
         // POST: EventController/Delete/5
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(EventDeleteViewModel model)
