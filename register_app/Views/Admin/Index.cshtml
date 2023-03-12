@@ -12,66 +12,58 @@
 @if (Model.Any())
 {
     <div style="display: flex; flex-direction: column; gap: 10px;">
-        @foreach (var account in Model)
-        {
-            <div class="list-group">
+        <div class="list-group">
+            @foreach (var account in Model)
+            {
                 <div class="list-group-item d-flex flex-column">
                     <div class="d-flex justify-content-between">
+                        <div class="font-weight-bold">@account.UserName</div>
+                        <div style="display: flex; gap: 10px;">
+                            @if (!UserManager.IsInRoleAsync(account.User, "Organiser").Result && !UserManager.IsInRoleAsync(account.User, "Security").Result)
+                            {
 
-                        @if ( !UserManager.IsInRoleAsync(account.User, "Organiser").Result && !UserManager.IsInRoleAsync(account.User, "Security").Result )
-                        {
-                            <div class="font-weight-bold"  >@account.UserName</div>
-                            
+                                <div>
+                                    <a asp-action="AddOrganiser" asp-controller="Admin" asp-route-id="@account.UserName">Make Organiser</a>
+                                </div>
+                                <div>
+                                    <a asp-action="AddSecurity" asp-controller="Admin" asp-route-id="@account.UserName">Make Security</a>
+                                </div>
+                            }
 
-                            <div style="display: flex; gap: 10px;">
-                                <a asp-action="AddOrganiser" asp-controller="Admin" asp-route-id="@account.UserName">Make Organiser</a>
-                                
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <a asp-action="AddSecurity" asp-controller="Admin" asp-route-id="@account.UserName">Make Security</a>
-                                
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <a asp-action="Add" asp-controller="Admin" asp-route-id="@account.UserName">Make Admin</a>
-                                
-                            </div>
-                            
+                            @if (UserManager.IsInRoleAsync(account.User, "Organiser").Result)
+                            {
+                                <div>
+                                    <a class="text-danger" asp-action="DeleteOrganiser" asp-controller="Admin" asp-route-id="@account.UserName">Remove Organiser</a>
+                                </div>
+                            }
 
-                        }
+                            @if (UserManager.IsInRoleAsync(account.User, "Security").Result)
+                            {
+                                <div>
+                                    <a class="text-danger" asp-action="DeleteSecurity" asp-controller="Admin" asp-route-id="@account.UserName">Remove Security</a>
+                                </div>
+                            }
 
-                        @if (UserManager.IsInRoleAsync(account.User, "Organiser").Result )
-                        {
-                            <div style="display: flex; gap: 10px;">
-                                <div class="font-weight-bold"  >@account.UserName</div>
-                                <a class="text-danger" asp-action="DeleteOrganiser" asp-controller="Admin" asp-route-id="@account.UserName">Remove Organiser</a>
-                            </div>
-                        }
-
-                        @if (UserManager.IsInRoleAsync(account.User, "Security").Result )
-                        {
-                            <div style="display: flex; gap: 10px;">
-                                <div class="font-weight-bold"  >@account.UserName</div>
-                                <a class="text-danger" asp-action="DeleteSecurity" asp-controller="Admin" asp-route-id="@account.UserName">Remove Security</a>
-                            </div>
-                        }
-
-                        @if (UserManager.IsInRoleAsync(account.User, "Admin").Result )
-                        {
-
-                            <div style="display: flex; gap: 10px;">
-                                <div class="font-weight-bold"  >@account.UserName</div>
-                                <a class="text-danger" asp-action="Delete" asp-controller="Admin" asp-route-id="@account.UserName">Delete Admin</a>
-                            </div>
-                        }
-
+                            @if (UserManager.IsInRoleAsync(account.User, "Admin").Result)
+                            {
+                                <div>
+                                    <a class="text-danger" asp-action="Delete" asp-controller="Admin" asp-route-id="@account.UserName">Delete Admin</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div>
+                                    <a asp-action="Add" asp-controller="Admin" asp-route-id="@account.UserName">Make Admin</a>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-
-        }
+            }
+        </div>
         <div class="flex-lg-row">
-                           <a asp-controller="Admin" asp-action="Register" class="btn btn-success mb-3">+ Create a User</a>
-                    </div>
+            <a asp-controller="Admin" asp-action="Register" class="btn btn-success mb-3">+ Create a User</a>
+        </div>
     </div>
 }
 else
