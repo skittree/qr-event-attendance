@@ -29,6 +29,8 @@ namespace register_app.Services
         private IMapper Mapper { get; }
         private UserManager<IdentityUser> UserManager { get; }
 
+        private IEmailService emailService { get; }
+
         public AttendeeService(ApplicationDbContext context,
             IMapper mapper,
             UserManager<IdentityUser> userManager)
@@ -36,6 +38,7 @@ namespace register_app.Services
             Context = context;
             Mapper = mapper;
             UserManager = userManager;
+            emailService = new EmailService();
         }
 
         public async Task<List<AttendeeViewModel>> GetIndexViewModelAsync(int id)
@@ -131,6 +134,10 @@ namespace register_app.Services
 
             Context.Attendees.Add(newAttendee);
             await Context.SaveChangesAsync();
+
+            emailService.SendNotification(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime);
+
+
         }
 
         public async Task EditAsync(AttendeeEditViewModel model, ClaimsPrincipal user)
