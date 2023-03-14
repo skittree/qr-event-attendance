@@ -1,12 +1,13 @@
-﻿@{
+﻿@using Google.Apis.Forms.v1.Data;
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Forms on drive:</p>
-        @foreach (var x in ViewData["Filenames"] as IEnumerable<string>)
+        @foreach (var x in ViewData["Filenames"] as IEnumerable<Form>)
         {
-            <div>@x</div>
+            <p><a href="@x.ResponderUri">@x.Info.DocumentTitle</a></p>
         }
 </div>

@@ -26,10 +26,8 @@ namespace register_app.Controllers
         [GoogleScopedAuthorize(DriveService.ScopeConstants.DriveReadonly, FormsService.ScopeConstants.FormsBody)]
         public async Task<IActionResult> Index()
         {
-            var files = await FormService.GetAllFormFiles();
-            var requests = await FormService.GetAllForms();
-            var names = files.Select(x => x.Name);
-            ViewData["Filenames"] = names;
+            var forms = await FormService.GetAllForms();
+            ViewData["Filenames"] = forms;
             return View();
         }
 

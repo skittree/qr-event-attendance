@@ -18,6 +18,7 @@ namespace register_app.Data.Models
         public IEnumerable<Attendee> Attendees { get; set; }
         public IdentityUser Organiser { get; set; }
         public string Description { get; set; }
+        public string FormId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
     }
