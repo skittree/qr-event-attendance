@@ -1,4 +1,6 @@
 using AutoMapper;
+using Google.Apis.Auth.AspNetCore3;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -51,7 +53,27 @@ namespace register_app
 
             var mapper = mapperConfig.CreateMapper();
 
+            services.AddAuthentication(o =>
+            {
+                // This forces challenge results to be handled by Google OpenID Handler, so there's no
+                // need to add an AccountController that emits challenges for Login.
+                o.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+                // This forces forbid results to be handled by Google OpenID Handler, which checks if
+                // extra scopes are required and does automatic incremental auth.
+                o.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+                // Default scheme that will handle everything else.
+                // Once a user is authenticated, the OAuth2 token info is stored in cookies.
+                o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie()
+            .AddGoogleOpenIdConnect(options =>
+            {
+                options.ClientId = Configuration.GetValue<string>("web:client_id");
+                options.ClientSecret = Configuration.GetValue<string>("web:client_secret");
+            });
+
             services.AddSingleton(mapper);
+            services.AddScoped<IFormService, FormService>();
             services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IAdminService, AdminService>();
