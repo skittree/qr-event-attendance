@@ -23,10 +23,11 @@ namespace register_app.Controllers
             _logger = logger;
         }
 
-        [GoogleScopedAuthorize(DriveService.ScopeConstants.DriveReadonly)]
+        [GoogleScopedAuthorize(DriveService.ScopeConstants.DriveReadonly, FormsService.ScopeConstants.FormsBody)]
         public async Task<IActionResult> Index()
         {
             var files = await FormService.GetAllFormFiles();
+            var requests = await FormService.GetAllForms();
             var names = files.Select(x => x.Name);
             ViewData["Filenames"] = names;
             return View();

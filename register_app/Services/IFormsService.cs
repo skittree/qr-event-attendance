@@ -17,14 +17,15 @@ using Google.Apis.Drive.v3;
 using System.Linq;
 using System.Collections.Generic;
 using Google.Apis.Drive.v3.Data;
+using Google.Apis.Forms.v1.Data;
 
 namespace register_app.Services
 {
     public interface IFormService
     {
         Task<List<File>> GetAllFormFiles();
-        Task<List<FormsResource.GetRequest>> FileToForm(List<File> files);
-        Task<List<FormsResource.GetRequest>> GetAllForms();
+        Task<List<Form>> FileToForm(List<File> files);
+        Task<List<Form>> GetAllForms();
 
     }
     //give permissions to app
@@ -59,21 +60,21 @@ namespace register_app.Services
             return forms;
         }
 
-        public async Task<List<FormsResource.GetRequest>> FileToForm(List<File> files)
+        public async Task<List<Form>> FileToForm(List<File> files)
         {
             GoogleCredential cred = await Auth.GetCredentialAsync();
             var service = new FormsService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = cred
             });
-            List<FormsResource.GetRequest> getrequests = new List<FormsResource.GetRequest>();
+            List<Form> forms = new List<Form>();
             foreach (var file in files)
             {
-                getrequests.Add(service.Forms.Get(file.Id));
+                forms.Add(await service.Forms.Get(file.Id).ExecuteAsync());
             }
-            return getrequests;
+            return forms;
         }
-        public async Task<List<FormsResource.GetRequest>> GetAllForms()
+        public async Task<List<Form>> GetAllForms()
         {
             var files = await GetAllFormFiles();
             var forms = await FileToForm(files);
