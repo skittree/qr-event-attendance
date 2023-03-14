@@ -23,9 +23,9 @@ namespace register_app.Services
 {
     public interface IFormService
     {
-        Task<List<File>> GetAllFormFiles();
-        Task<List<Form>> FileToForm(List<File> files);
-        Task<List<Form>> GetAllForms();
+        Task<List<File>> GetAllFormFilesAsync(); //drive api called once
+        Task<List<Form>> GetAllFormsAsync(); //drive api called once + forms api called for every form 
+        Task<Form> GetFormAsync(string id); //forms api called once
 
     }
     //give permissions to app
@@ -47,8 +47,18 @@ namespace register_app.Services
             UserManager = userManager;
             Auth = auth;
         }
+        public async Task<Form> GetFormAsync(string id)
+        {
+            GoogleCredential cred = await Auth.GetCredentialAsync();
+            var service = new FormsService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = cred
+            });
+            var form = await service.Forms.Get(id).ExecuteAsync();
+            return form;
+        }
         //get all files that are forms from the drive
-        public async Task<List<File>> GetAllFormFiles()
+        public async Task<List<File>> GetAllFormFilesAsync()
         {
             GoogleCredential cred = await Auth.GetCredentialAsync();
             var service = new DriveService(new BaseClientService.Initializer
@@ -59,9 +69,9 @@ namespace register_app.Services
             var forms = files.Files.Where(x => x.MimeType == "application/vnd.google-apps.form").ToList();
             return forms;
         }
-
-        public async Task<List<Form>> FileToForm(List<File> files)
+        public async Task<List<Form>> GetAllFormsAsync()
         {
+            var files = await GetAllFormFilesAsync();
             GoogleCredential cred = await Auth.GetCredentialAsync();
             var service = new FormsService(new BaseClientService.Initializer
             {
@@ -73,17 +83,6 @@ namespace register_app.Services
                 forms.Add(await service.Forms.Get(file.Id).ExecuteAsync());
             }
             return forms;
-        }
-        public async Task<List<Form>> GetAllForms()
-        {
-            var files = await GetAllFormFiles();
-            var forms = await FileToForm(files);
-            return forms;
-        }
-
-        public void CreateForm()
-        {
-            
         }
     }
 }
