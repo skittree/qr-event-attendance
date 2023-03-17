@@ -1,6 +1,36 @@
-﻿@{
+﻿@using Google.Apis.Forms.v1.Data;
+@{
     ViewData["Title"] = "Privacy Policy";
 }
 <h1>@ViewData["Title"]</h1>
 
 <p>Use this page to detail your site's privacy policy.</p>
+
+@if (ViewBag.Forms != null)
+{
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="list-group">
+            @foreach (Form item in ViewBag.Forms)
+            {
+                <div class="list-group-item d-flex flex-column">
+                    <div class="d-flex justify-content-between">
+                        <a href="@item.ResponderUri" class="font-weight-bold">@item.Info.Title</a>
+                    </div>
+                    @if (!String.IsNullOrEmpty(item.Info.Description))
+                    {
+                        <div class="d-flex">
+                            <div class="text-info">@item.Info.Description</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No forms in account.
+    </div>
+}
+

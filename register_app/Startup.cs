@@ -1,5 +1,8 @@
 using AutoMapper;
 using Google.Apis.Auth.AspNetCore3;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Forms.v1;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -53,6 +56,12 @@ namespace register_app
 
             var mapper = mapperConfig.CreateMapper();
 
+            services.Configure<ClientSecrets>(opt =>
+            {
+                opt.ClientId = Configuration.GetValue<string>("web:client_id");
+                opt.ClientSecret = Configuration.GetValue<string>("web:client_secret");
+            });
+
             services.AddAuthentication(o =>
             {
                 o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -62,6 +71,9 @@ namespace register_app
             {
                 options.ClientId = Configuration.GetValue<string>("web:client_id");
                 options.ClientSecret = Configuration.GetValue<string>("web:client_secret");
+                options.Scope.Add(DriveService.Scope.DriveReadonly);
+                options.Scope.Add(FormsService.Scope.FormsBody);
+                options.SaveTokens = true;
             });
 
             services.AddSingleton(mapper);

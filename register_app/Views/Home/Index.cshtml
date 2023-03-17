@@ -5,9 +5,4 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Forms on drive:</p>
-        @foreach (var x in ViewData["Filenames"] as IEnumerable<Form>)
-        {
-            <p><a href="@x.ResponderUri">@x.Info.DocumentTitle</a></p>
-        }
 </div>
