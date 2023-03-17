@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using register_app.Models;
@@ -26,6 +27,7 @@ namespace register_app.Controllers
             return View();
         }
 
+        [Authorize]
         public async Task<IActionResult> Privacy()
         {
             try
