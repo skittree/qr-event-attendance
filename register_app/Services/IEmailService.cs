@@ -5,88 +5,185 @@ using MimeKit;
 using System.Drawing;
 using QRCoder;
 using MimeKit.Utils;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Services;
+using System.Threading.Tasks;
+using register_app.Data;
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Options;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Auth.OAuth2.Flows;
+using System.Threading;
+using System.Security.Claims;
+using Google.Apis.Auth.AspNetCore3;
+using System.IO;
+using System.Net.Mail;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 
 namespace register_app.Services
 {
     public interface IEmailService
     {
-        public void SendNotification(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime);
+        public Task SendEmail(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime, ClaimsPrincipal user);
 
-        public byte[] getQRCode(string attendeeKey);
 
     }
 
     public class EmailService : IEmailService
 
     {
-        private string GmailServer { get; }
+        private ApplicationDbContext Context { get; }
+        private IMapper Mapper { get; }
+        private UserManager<IdentityUser> UserManager { get; }
+        private ClientSecrets Secrets { get; }
 
-        private string Email { get; }
-
-        private string Password { get; }
-
-        public EmailService ()
+        public EmailService(ApplicationDbContext context,
+            IMapper mapper,
+            UserManager<IdentityUser> userManager,
+            IOptions<ClientSecrets> secret)
         {
-            
-            GmailServer = "smtp.gmail.com";
-            Email = "sas.events.tools@gmail.com";
-            Password = "r3g1str@t10n";
+            Context = context;
+            Mapper = mapper;
+            UserManager = userManager;
+            Secrets = secret.Value;
         }
 
-        public void SendNotification(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime)
+        public async Task<UserCredential> GetCredentialAsync(string refresh_token)
         {
-            try
+            TokenResponse tokenReponse = new TokenResponse()
             {
-                var email = new MimeMessage();
+                RefreshToken = refresh_token
+            };
 
-                email.From.Add(new MailboxAddress("SAS Event Registration System", Email));
+            var initializer = new GoogleAuthorizationCodeFlow.Initializer()
+            {
+                ClientSecrets = Secrets
+            };
 
-                email.To.Add(new MailboxAddress(targetName, targetEmail));
+            initializer.IncludeGrantedScopes = true;
 
-                email.Subject = "*Notification* Registration for SAS event";
+            var userCredential = new UserCredential(
+               new GoogleAuthorizationCodeFlow(initializer),
+               "user",
+               tokenReponse);
 
-                var image_bytes = getQRCode(attendeeKey);
+            await userCredential.RefreshTokenAsync(CancellationToken.None);
+            return userCredential;
+        }
 
-                var image_id = MimeUtils.GenerateMessageId();
+        public async Task<string> GetRefreshTokenAsync(ClaimsPrincipal user)
+        {
+            IdentityUser context_user = await UserManager.GetUserAsync(user);
+            var refresh_token = await UserManager.GetAuthenticationTokenAsync(
+                context_user,
+                GoogleOpenIdConnectDefaults.AuthenticationScheme,
+                "refresh_token"
+            );
 
-                var image_type = "image/png";
+            if (refresh_token == null)
+            {
+                throw new ArgumentNullException("refresh token not found in database");
+            }
+            return refresh_token;
+        }
 
+        public async Task<IdentityResult> SetRefreshTokenAsync(ClaimsPrincipal user, string new_token)
+        {
+            IdentityUser context_user = await UserManager.GetUserAsync(user);
+            var result = await UserManager.SetAuthenticationTokenAsync(
+                context_user,
+                GoogleOpenIdConnectDefaults.AuthenticationScheme,
+                "refresh_token",
+                new_token);
+            return result;
+        }
 
-                var builder = new BodyBuilder();
+        public async Task<GmailService> CreateEmailServiceAsync(ClaimsPrincipal user)
+        {
+            var refresh_token = await GetRefreshTokenAsync(user);
+            UserCredential cred = await GetCredentialAsync(refresh_token);
+            var service = new GmailService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = cred
+            });
+            return service;
+        }
+        public async Task SendEmail(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime,ClaimsPrincipal user)
+        {
 
-                builder.HtmlBody = "<b>Hello, " + targetName + " !</b><div><br>Thank you for registering for event: " + eventName + ".<br><br>Event Date: " + eventTime.Date.ToString() + " <br><br>Event starts at: " + eventTime.TimeOfDay.ToString() + "<br><>br>Please use QR code in the attached files, to authorize at the entrance. <br><br> Will be happy to see you soon!div/>";
+            // Create the Gmail service.
+            var service = await CreateEmailServiceAsync(user);
 
-                builder.Attachments.Add(image_id, image_bytes, ContentType.Parse(image_type));
+            // Create the email message.
+            var message = new Message();
+            message.Raw = Base64UrlEncode(CreateMessage(targetEmail,targetName, attendeeKey, eventName,eventTime));
 
-                email.Body = builder.ToMessageBody();
+            // Send the email.
+            var request = service.Users.Messages.Send(message,"me");
+            await request.ExecuteAsync();
 
-                using (var smtp = new SmtpClient())
+            
+
+        }
+        private byte[] CreateMessage(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime)
+        {
+            // Create the email message.
+            var msg = new System.Net.Mail.MailMessage();
+
+            msg.To.Add(targetEmail);
+            msg.From = new System.Net.Mail.MailAddress("System.Net.Mail.MailMessage");
+            msg.Subject = "* Notification * Registration for SAS event";
+
+            msg.IsBodyHtml = true;
+
+            string htmlBody = "<b>Hello, " + targetName + " !</b><div><br>Thank you for registering for event: " + eventName + ".<br><br>Event Date: " + eventTime.Date.ToString() + " <br><br>Event starts at: " + eventTime.TimeOfDay.ToString() + "<br><>br>Please use QR code in the attached files, to authorize at the entrance. <br><br> Will be happy to see you soon!div/>";
+
+            msg.Body = htmlBody;
+
+            Bitmap bitmap = getQRCode(attendeeKey); // replace with your own method to get the image as a Bitmap
+            if (bitmap != null)
+            {
+                using (MemoryStream ms = new MemoryStream())
                 {
-                    smtp.Connect(GmailServer, 587, false);
-
-                    // Note: only needed if the SMTP server requires authentication
-                    smtp.Authenticate(Email, Password);
-
-                    smtp.Send(email);
-                    smtp.Disconnect(true);
+                    bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    ms.Position = 0;
+                    Attachment imageAttachment = new Attachment(ms, "image.jpeg", MediaTypeNames.Image.Jpeg);
+                    msg.Attachments.Add(imageAttachment);
                 }
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-            }
 
 
-        public byte[] getQRCode(string attendeeKey)
+            // Convert the message to a MIME message.
+            var mimeMessage = MimeKit.MimeMessage.CreateFromMailMessage(msg);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(mimeMessage.ToString());
+
+            return bytes;
+        }
+
+        private string Base64UrlEncode(byte[] input)
+        {
+            return System.Convert.ToBase64String(input)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .Replace("=", "");
+        }
+
+
+
+
+        public Bitmap getQRCode(string attendeeKey)
         {
             try
             {
                 QRCodeGenerator qrGenerator = new QRCodeGenerator();
                 QRCodeData qrCodeData = qrGenerator.CreateQrCode(attendeeKey, QRCodeGenerator.ECCLevel.Q);
-                PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
-                byte[] qrCodeAsPngByteArr = qrCode.GetGraphic(20);
-                return qrCodeAsPngByteArr;
+                QRCode qrCode = new QRCode(qrCodeData);
+                Bitmap qrCodeAsBitmap = qrCode.GetGraphic(20);
+                return qrCodeAsBitmap;
             }
             catch (Exception ex)
             {

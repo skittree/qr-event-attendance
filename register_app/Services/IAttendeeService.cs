@@ -38,7 +38,7 @@ namespace register_app.Services
             Context = context;
             Mapper = mapper;
             UserManager = userManager;
-            emailService = new EmailService();
+            emailService = emailService;
         }
 
         public async Task<List<AttendeeViewModel>> GetIndexViewModelAsync(int id)
@@ -135,7 +135,7 @@ namespace register_app.Services
             Context.Attendees.Add(newAttendee);
             await Context.SaveChangesAsync();
 
-            emailService.SendNotification(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime);
+            await emailService.SendEmail(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime, User);
 
 
         }
