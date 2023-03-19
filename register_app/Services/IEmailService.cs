@@ -132,10 +132,10 @@ namespace register_app.Services
         private byte[] CreateMessage(string targetEmail, string targetName, string attendeeKey, string eventName, DateTime eventTime)
         {
             // Create the email message.
-            var msg = new System.Net.Mail.MailMessage();
+            var msg = new MailMessage();
 
             msg.To.Add(targetEmail);
-            msg.From = new System.Net.Mail.MailAddress("System.Net.Mail.MailMessage");
+            msg.From = new MailAddress("sas.events.tool@gmail.com");
             msg.Subject = "* Notification * Registration for SAS event";
 
             msg.IsBodyHtml = true;
@@ -145,6 +145,7 @@ namespace register_app.Services
             msg.Body = htmlBody;
 
             Bitmap bitmap = getQRCode(attendeeKey); // replace with your own method to get the image as a Bitmap
+            MimeMessage mimeMessage = new MimeMessage { };
             if (bitmap != null)
             {
                 using (MemoryStream ms = new MemoryStream())
@@ -153,12 +154,10 @@ namespace register_app.Services
                     ms.Position = 0;
                     Attachment imageAttachment = new Attachment(ms, "image.jpeg", MediaTypeNames.Image.Jpeg);
                     msg.Attachments.Add(imageAttachment);
+                    mimeMessage = MimeMessage.CreateFromMailMessage(msg);
                 }
             }
 
-
-            // Convert the message to a MIME message.
-            var mimeMessage = MimeKit.MimeMessage.CreateFromMailMessage(msg);
             var bytes = System.Text.Encoding.UTF8.GetBytes(mimeMessage.ToString());
 
             return bytes;

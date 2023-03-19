@@ -3,6 +3,7 @@ using Google.Apis.Auth.AspNetCore3;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Forms.v1;
+using Google.Apis.Gmail.v1;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -73,11 +74,13 @@ namespace register_app
                 options.ClientSecret = Configuration.GetValue<string>("web:client_secret");
                 options.Scope.Add(DriveService.Scope.DriveReadonly);
                 options.Scope.Add(FormsService.Scope.FormsBody);
+                options.Scope.Add(GmailService.Scope.GmailSend);
                 options.SaveTokens = true;
             });
 
             services.AddSingleton(mapper);
             services.AddScoped<IFormService, FormService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IAdminService, AdminService>();
