@@ -6,7 +6,7 @@
 
 <h1>All events</h1>
 <hr>
-@if (User.IsInRole("Admin"))
+@if (User.IsInRole("Admin") || User.IsInRole("Organiser"))
 {
     <a asp-controller="Event" asp-action="Create" class="btn btn-success mb-3">+ Create Event</a>
 }
@@ -21,7 +21,7 @@
                 <div class="d-flex justify-content-between">
                     <a class="font-weight-bold" asp-action="Details" asp-controller="Event" asp-route-id="@item.Id">@item.Name</a>
                     <div style="display: flex; gap: 10px;">
-                        @if (User.IsInRole("Admin") || (User.IsInRole("Organiser") && (item.Organiser.UserName == User.Identity.Name)))
+                        @if (User.IsInRole("Admin") || (User.IsInRole("Organiser") && (item.Organiser != null && item.Organiser.UserName == User.Identity.Name)))
                         {
                             <a class="text-danger" asp-action="Delete" asp-controller="Event" asp-route-id="@item.Id">Delete</a>
                             <a asp-action="Edit" asp-controller="Event" asp-route-id="@item.Id">Edit</a>

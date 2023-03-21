@@ -93,7 +93,10 @@ namespace register_app.Services
         }
         public async Task<EventDeleteViewModel> GetDeleteViewModelAsync(int id, ClaimsPrincipal user)
         {
-            var event_ = await Context.Events.FirstOrDefaultAsync(x => x.Id == id);
+            var event_ = await Context.Events
+                .Include(x => x.Organiser)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
             if (event_ == null)
             {
                 throw new ArgumentNullException(nameof(event_));

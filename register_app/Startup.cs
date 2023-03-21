@@ -208,14 +208,13 @@ namespace register_app
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                         },
-                        "S3curty").Result;
+                        "S3cur!ty").Result;
 
                     var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "security");
                     var result = userManager.AddToRoleAsync(adminUser, "Security").Result;
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
                     return;
                 }
             }
@@ -249,7 +248,6 @@ namespace register_app
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
                     return;
                 }
             }
