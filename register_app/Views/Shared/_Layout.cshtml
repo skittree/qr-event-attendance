@@ -37,6 +37,10 @@
         </nav>
     </header>
     <div class="container">
+        @if (User.IsInRole("Security"))
+        {
+            <partial name="_SecurityPopup" />
+        }
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
