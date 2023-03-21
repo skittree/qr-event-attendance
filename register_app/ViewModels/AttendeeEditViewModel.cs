@@ -17,8 +17,9 @@ namespace register_app.ViewModels
         public int? EventId { get; set; }
         public EventViewModel Event { get; set; }
 
-        public DateTime TimeArrived { get; set; }
         public string Key { get; set; }
+
+        public DateTime TimeArrived { get; set; }
 
     }
 }

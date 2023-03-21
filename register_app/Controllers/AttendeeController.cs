@@ -31,7 +31,8 @@ namespace register_app.Controllers
         }
 
         // GET: AttendeeController/Create
-        [Authorize]
+        [Authorize(Roles = "Admin, Organiser")]
+        [HttpGet]
         public async Task<IActionResult> Create(int id)
         {
             var model = await AttendeeService.GetCreateViewModelAsync(id);
@@ -39,6 +40,7 @@ namespace register_app.Controllers
         }
 
         // POST: AttendeeController/Create
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AttendeeCreateViewModel model)
@@ -60,6 +62,7 @@ namespace register_app.Controllers
         }
 
         // GET: AttendeeController/Edit/5
+        [Authorize(Roles = "Admin, Organiser")]
         public async Task<ActionResult> Edit(int id)
         {
             try
@@ -74,6 +77,7 @@ namespace register_app.Controllers
         }
 
         // POST: AttendeeController/Edit/5
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(AttendeeEditViewModel model)
@@ -108,6 +112,7 @@ namespace register_app.Controllers
         }
 
         // POST: AttendeeController/Delete/5
+        [Authorize(Roles = "Admin, Organiser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(AttendeeDeleteViewModel model)
