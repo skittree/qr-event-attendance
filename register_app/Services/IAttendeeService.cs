@@ -133,6 +133,8 @@ namespace register_app.Services
             var newAttendee = Mapper.Map<Attendee>(model);
             newAttendee.Event = event_;
 
+            newAttendee.Key = Guid.NewGuid().ToString() + DateTime.Now.ToString();
+
             Context.Attendees.Add(newAttendee);
             await Context.SaveChangesAsync();
 
@@ -163,7 +165,6 @@ namespace register_app.Services
 
             attendee.Name = model.Name;
             attendee.Email = model.Email;
-            attendee.Key = model.Key;
             attendee.TimeArrived = model.TimeArrived;
 
             await Context.SaveChangesAsync();

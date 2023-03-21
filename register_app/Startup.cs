@@ -87,6 +87,8 @@ namespace register_app
 
             InitializeRoles(services);
             InitializeAdmin(services);
+            InitializeSecurity(services);
+            InitializeOrganiser(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -179,6 +181,75 @@ namespace register_app
                 }
                 catch (Exception)
                 {
+                    return;
+                }
+            }
+        }
+
+        private void InitializeSecurity(IServiceCollection services)
+        {
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                try
+                {
+                    var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
+
+                    if (userManager.Users.Any(x => x.UserName == "security"))
+                    {
+                        return;
+                    }
+
+                    var identityResult = userManager.CreateAsync(
+                        new IdentityUser
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Email = "security",
+                            UserName = "security",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                        },
+                        "S3curty").Result;
+
+                    var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "security");
+                    var result = userManager.AddToRoleAsync(adminUser, "Security").Result;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                    return;
+                }
+            }
+        }
+        private void InitializeOrganiser(IServiceCollection services)
+        {
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                try
+                {
+                    var userManager = serviceProvider.GetService<UserManager<IdentityUser>>();
+
+                    if (userManager.Users.Any(x => x.UserName == "organiser"))
+                    {
+                        return;
+                    }
+
+                    var identityResult = userManager.CreateAsync(
+                        new IdentityUser
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Email = "organiser",
+                            UserName = "organiser",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                        },
+                        "Org@n1s3r").Result;
+
+                    var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "organiser");
+                    var result = userManager.AddToRoleAsync(adminUser, "Organiser").Result;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
                     return;
                 }
             }

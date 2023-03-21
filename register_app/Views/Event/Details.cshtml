@@ -9,7 +9,7 @@
 duration: @(Model.EndTime-Model.StartTime)
 <hr>
 
-@if (User.IsInRole("Admin"))
+@if (User.IsInRole("Organiser") || User.IsInRole("Admin"))
 {
     <a asp-controller="Attendee" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-success mb-3">+ Add Attendee</a>
 }
