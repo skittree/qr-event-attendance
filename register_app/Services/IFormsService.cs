@@ -17,6 +17,7 @@ using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using System.Security.Claims;
+using register_app.ViewModels;
 
 namespace register_app.Services
 {
@@ -24,7 +25,8 @@ namespace register_app.Services
     {
         Task<List<File>> GetAllFormFilesAsync(ClaimsPrincipal user); //drive api called once
         Task<List<Form>> GetAllFormsAsync(ClaimsPrincipal user); //drive api called once + forms api called for every form 
-        Task<Form> GetFormAsync(ClaimsPrincipal user, string id); //forms api called once
+        Task<Form> GetFormAsync(ClaimsPrincipal user, string id); //forms api called
+        Task<string> CreateFormAsync(ClaimsPrincipal user, EventCreateViewModel model); 
         Task<IdentityResult> SetRefreshTokenAsync(ClaimsPrincipal user, string new_token);
 
     }
@@ -116,6 +118,70 @@ namespace register_app.Services
                 HttpClientInitializer = cred
             });
             return service;
+        }
+
+        public async Task<string> CreateFormAsync(ClaimsPrincipal user, EventCreateViewModel model)
+        {
+            var service = await CreateFormsServiceAsync(user);
+
+            Form form = new Form {
+                Info = new Info {
+                    Title = model.Name,
+                    DocumentTitle = model.Name 
+                }
+            };
+
+            var result = await service.Forms.Create(form).ExecuteAsync();
+
+            string formid = result.FormId;
+            BatchUpdateFormRequest update = new BatchUpdateFormRequest
+            {
+                Requests = new List<Request> {
+                    new Request {
+                        UpdateFormInfo = new UpdateFormInfoRequest {
+                            Info = new Info {
+                                Title = model.Name,
+                                Description = model.Description
+                            },
+                            UpdateMask = "*"
+                        }
+                    },
+                    new Request {
+                        CreateItem = new CreateItemRequest {
+                            Item = new Item {
+                                Title = "Email",
+                                Description = "Enter your email",
+                                QuestionItem = new QuestionItem {
+                                    Question = new Question {
+                                        TextQuestion = new TextQuestion{ },
+                                        Required = true
+                                    }
+                                },
+                            },
+                            Location = new Location { Index = 0 }
+                        }
+                    },
+                    new Request {
+                        CreateItem = new CreateItemRequest {
+                            Item = new Item {
+                                Title = "Name",
+                                Description = "Enter your real name",
+                                QuestionItem = new QuestionItem {
+                                    Question = new Question {
+                                        TextQuestion = new TextQuestion{ },
+                                        Required = true
+                                    }
+                                },
+                            },
+                            Location = new Location { Index = 1 }
+                        }
+                    }
+                }
+            };
+
+            var response = await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
+
+            return formid;
         }
 
         public async Task<Form> GetFormAsync(ClaimsPrincipal user, string id)

@@ -30,14 +30,17 @@ namespace register_app.Services
         private ApplicationDbContext Context { get; }
         private IMapper Mapper { get; }
         private UserManager<IdentityUser> UserManager { get; }
+        private IFormService FormService { get; }
 
         public EventService(ApplicationDbContext context,
             IMapper mapper,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IFormService formService)
         {
             Context = context;
             Mapper = mapper;
             UserManager = userManager;
+            FormService = formService;
         }
 
         public async Task<List<EventViewModel>> GetIndexViewModelAsync()
@@ -128,6 +131,7 @@ namespace register_app.Services
 
             var newEvent = Mapper.Map<Event>(model);
             newEvent.Organiser = user;
+            newEvent.FormId = await FormService.CreateFormAsync(User, model);
 
             Context.Events.Add(newEvent);
             await Context.SaveChangesAsync();
