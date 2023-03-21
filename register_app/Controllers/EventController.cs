@@ -62,6 +62,10 @@ namespace register_app.Controllers
                 await EventService.CreateAsync(model, User);
                 return RedirectToAction("Index");
             }
+            catch (ArgumentNullException ex) when (ex.ParamName == "refreshToken")
+            {
+                throw;
+            }
             catch (ArgumentNullException)
             {
                 return NotFound();

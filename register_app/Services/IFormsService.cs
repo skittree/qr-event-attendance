@@ -82,7 +82,7 @@ namespace register_app.Services
 
             if (refresh_token == null)
             {
-                throw new ArgumentNullException("refresh token not found in database");
+                throw new ArgumentNullException("refreshToken");
             }
             return refresh_token;
         }

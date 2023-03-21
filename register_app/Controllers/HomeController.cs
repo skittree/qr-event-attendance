@@ -30,22 +30,7 @@ namespace register_app.Controllers
         [Authorize]
         public async Task<IActionResult> Privacy()
         {
-            try
-            {
-                ViewBag.Forms = await FormService.GetAllFormsAsync(HttpContext.User);
-                return View();
-            }
-            catch (ArgumentNullException ex)
-            {
-                var properties = new AuthenticationProperties { RedirectUri = "/" };
-                await HttpContext.ChallengeAsync(GoogleOpenIdConnectDefaults.AuthenticationScheme, properties);
-                var authResult = await HttpContext.AuthenticateAsync(GoogleOpenIdConnectDefaults.AuthenticationScheme);
-                if (authResult.Succeeded)
-                {
-                    var newRefreshToken = authResult.Properties.GetTokenValue("refresh_token");
-                    await FormService.SetRefreshTokenAsync(HttpContext.User, newRefreshToken);
-                }
-            }
+            ViewBag.Forms = await FormService.GetAllFormsAsync(HttpContext.User);
             return View();
         }
 

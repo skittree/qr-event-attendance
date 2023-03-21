@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using register_app.Configuration;
 using register_app.Data;
 using register_app.Data.Roles;
+using register_app.Middleware;
 using register_app.Services;
 using System;
 using System.Collections.Generic;
@@ -85,6 +86,7 @@ namespace register_app
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IAdminService, AdminService>();
 
+
             InitializeRoles(services);
             InitializeAdmin(services);
             InitializeSecurity(services);
@@ -112,6 +114,7 @@ namespace register_app
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
@@ -120,6 +123,7 @@ namespace register_app
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+            
         }
 
         private void InitializeRoles(IServiceCollection services)
