@@ -48,7 +48,7 @@ namespace register_app.Services
             Secrets = secret.Value;
         }
 
-        public async Task<UserCredential> GetCredentialAsync(string refresh_token)
+        private async Task<UserCredential> GetCredentialAsync(string refresh_token)
         {
             TokenResponse tokenReponse = new TokenResponse()
             {
@@ -71,7 +71,7 @@ namespace register_app.Services
             return userCredential;
         }
 
-        public async Task<string> GetRefreshTokenAsync(ClaimsPrincipal user)
+        private async Task<string> GetRefreshTokenAsync(ClaimsPrincipal user)
         {
             IdentityUser context_user = await UserManager.GetUserAsync(user);
             var refresh_token = await UserManager.GetAuthenticationTokenAsync(
@@ -98,7 +98,7 @@ namespace register_app.Services
             return result;
         }
 
-        public async Task<FormsService> CreateFormsServiceAsync(ClaimsPrincipal user)
+        private async Task<FormsService> CreateFormsServiceAsync(ClaimsPrincipal user)
         {
             var refresh_token = await GetRefreshTokenAsync(user);
             UserCredential cred = await GetCredentialAsync(refresh_token);
@@ -109,7 +109,7 @@ namespace register_app.Services
             return service;
         }
 
-        public async Task<DriveService> CreateDriveServiceAsync(ClaimsPrincipal user)
+        private async Task<DriveService> CreateDriveServiceAsync(ClaimsPrincipal user)
         {
             var refresh_token = await GetRefreshTokenAsync(user);
             UserCredential cred = await GetCredentialAsync(refresh_token);
@@ -179,9 +179,35 @@ namespace register_app.Services
                 }
             };
 
-            var response = await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
+            await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
+            await AddWatchAsync(user, formid);
 
             return formid;
+        }
+
+        private async Task<Watch> AddWatchAsync(ClaimsPrincipal user, string formid)
+        {
+            var service = await CreateFormsServiceAsync(user);
+
+            // Set up the watch request.
+            var watchRequest = service.Forms.Watches.Create(new CreateWatchRequest()
+            {
+                Watch = new Watch
+                {
+                    EventType = "RESPONSES",
+                    Target = new WatchTarget
+                    {
+                        Topic = new CloudPubsubTopic
+                        {
+                            TopicName = "projects/sas-event-registration-system/topics/watches"
+                        }
+                    }
+                }
+            }, formid);
+
+            // Register the watch request with the Google Forms API.
+            Watch response = await watchRequest.ExecuteAsync();
+            return response;
         }
 
         public async Task<Form> GetFormAsync(ClaimsPrincipal user, string id)

@@ -76,6 +76,7 @@ namespace register_app
                 options.Scope.Add(DriveService.Scope.DriveReadonly);
                 options.Scope.Add(FormsService.Scope.FormsBody);
                 options.Scope.Add(GmailService.Scope.GmailSend);
+                //options.Scope.Add();
                 options.SaveTokens = true;
             });
 
