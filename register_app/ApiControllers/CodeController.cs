@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using register_app.DtoModels;
+using register_app.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +14,15 @@ namespace register_app.ApiControllers
     [ApiController]
     public class CodeController : ControllerBase
     {
+        private IAttendeeService AttendeeService { get; }
+
+        public CodeController(IAttendeeService attendeeService)
+        {
+            AttendeeService = attendeeService;
+        }
+
         [HttpPost]
-        public IActionResult Post(CodeDto model)
+        public async Task<IActionResult> Post(CodeDto model)
         {
             if (model == null)
             {
@@ -22,7 +30,13 @@ namespace register_app.ApiControllers
             }
             try
             {
+                var a = User;
+                await AttendeeService.AuthenticateAttendeeAsync(model.Key);
                 return Ok();
+            }
+            catch (ArgumentNullException ae)
+            {
+                return BadRequest(ae.Message);
             }
             catch (ArgumentException ae)
             {

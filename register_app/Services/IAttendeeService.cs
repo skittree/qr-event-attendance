@@ -21,6 +21,8 @@ namespace register_app.Services
         Task CreateAsync(AttendeeCreateViewModel model, ClaimsPrincipal user);
         Task EditAsync(AttendeeEditViewModel model, ClaimsPrincipal user);
         Task DeleteAsync(AttendeeDeleteViewModel model, ClaimsPrincipal user);
+
+        Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key);
     }
 
     public class AttendeeService : IAttendeeService
@@ -49,10 +51,10 @@ namespace register_app.Services
                 .Include(x => x.Attendees)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-                if (event_ == null)
-                {
-                    throw new ArgumentNullException(nameof(event_));
-                }
+            if (event_ == null)
+            {
+                throw new ArgumentNullException(nameof(event_));
+            }
 
             var model = Mapper.Map<List<AttendeeViewModel>>(event_.Attendees);
             return model;
@@ -192,6 +194,21 @@ namespace register_app.Services
 
             Context.Attendees.Remove(attendee);
             await Context.SaveChangesAsync();
+        }
+
+        public async Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key)
+        {
+            var attendee_ = await Context.Attendees
+                .Include(x => x.Event)
+                .FirstOrDefaultAsync(x => x.Key == key);
+
+            if (attendee_ == null)
+            {
+                throw new ArgumentNullException(nameof(attendee_));
+            }
+
+            var model = Mapper.Map<AttendeeViewModel>(attendee_.Event);
+            return model;
         }
     }
 }
