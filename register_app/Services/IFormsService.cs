@@ -18,6 +18,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Security.Claims;
 using register_app.ViewModels;
+using Google.Apis.Pubsub.v1;
 
 namespace register_app.Services
 {
@@ -114,6 +115,17 @@ namespace register_app.Services
             var refresh_token = await GetRefreshTokenAsync(user);
             UserCredential cred = await GetCredentialAsync(refresh_token);
             var service = new DriveService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = cred
+            });
+            return service;
+        }
+
+        private async Task<PubsubService> CreatePubsubServiceAsync(ClaimsPrincipal user)
+        {
+            var refresh_token = await GetRefreshTokenAsync(user);
+            UserCredential cred = await GetCredentialAsync(refresh_token);
+            var service = new PubsubService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = cred
             });

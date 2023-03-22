@@ -77,6 +77,7 @@ namespace register_app
                 options.Scope.Add(DriveService.Scope.DriveReadonly);
                 options.Scope.Add(FormsService.Scope.FormsBody);
                 options.Scope.Add(GmailService.Scope.GmailSend);
+                options.Scope.Add(FormsService.Scope.FormsResponsesReadonly);
                 options.Scope.Add(PubsubService.Scope.Pubsub);
                 options.SaveTokens = true;
             });
@@ -219,7 +220,7 @@ namespace register_app
                     var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "security");
                     var result = userManager.AddToRoleAsync(adminUser, "Security").Result;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return;
                 }
@@ -252,7 +253,7 @@ namespace register_app
                     var adminUser = userManager.Users.FirstOrDefault(x => x.UserName == "organiser");
                     var result = userManager.AddToRoleAsync(adminUser, "Organiser").Result;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return;
                 }

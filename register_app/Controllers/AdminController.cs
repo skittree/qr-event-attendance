@@ -26,7 +26,7 @@ namespace Task3.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Register()
+        public IActionResult Register()
         {
             return View(AdminService.GetCreateModelAsync());
         }
