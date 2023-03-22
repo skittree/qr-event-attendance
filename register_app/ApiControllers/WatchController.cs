@@ -1,36 +1,39 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using register_app.DtoModels;
 using register_app.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace register_app.ApiControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CodeController : ControllerBase
+    public class WatchController : ControllerBase
     {
         private IAttendeeService AttendeeService { get; }
 
-        public CodeController(IAttendeeService attendeeService)
+        public WatchController(IAttendeeService attendeeService)
         {
             AttendeeService = attendeeService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(CodeDto model)
+        public IActionResult Post([FromBody] JObject payload)
         {
-            if (model == null)
+            if (payload == null)
             {
                 return BadRequest("object was null");
             }
             try
             {
-                await AttendeeService.AuthenticateAttendeeAsync(model.Key);
+                string formId = payload["formId"].ToString();
+                //add function here to update list of attendees for an event (connected to formid) and send emails to all new participants
                 return Ok();
             }
             catch (ArgumentNullException ae)

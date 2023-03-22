@@ -189,7 +189,7 @@ namespace register_app.Services
                     throw new ArgumentNullException("User did not create this event");
                 }
             }
-
+            //add code here to also remove the form & maybe watch?
             Context.Events.Remove(event_);
             await Context.SaveChangesAsync();
         }

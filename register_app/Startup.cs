@@ -88,7 +88,7 @@ namespace register_app
             services.AddScoped<IAttendeeService, AttendeeService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IAdminService, AdminService>();
-
+            services.AddControllers().AddNewtonsoftJson();
 
             InitializeRoles(services);
             InitializeAdmin(services);
