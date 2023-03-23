@@ -25,7 +25,7 @@ namespace register_app.Services
 
         Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key);
 
-        Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User)
+        Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User);
     }
 
     public class AttendeeService : IAttendeeService
