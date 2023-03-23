@@ -30,7 +30,7 @@ namespace register_app.ApiControllers
             }
             try
             {
-                await AttendeeService.AuthenticateAttendeeAsync(model.Key);
+                var attendee = await AttendeeService.AuthenticateAttendeeAsync(model.Key);
                 return Ok();
             }
             catch (ArgumentNullException ae)

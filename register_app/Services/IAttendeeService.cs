@@ -247,7 +247,7 @@ namespace register_app.Services
                 throw new ArgumentNullException(nameof(attendee_));
             }
 
-            var model = Mapper.Map<AttendeeViewModel>(attendee_.Event);
+            var model = Mapper.Map<AttendeeViewModel>(attendee_);
             return model;
         }
 
