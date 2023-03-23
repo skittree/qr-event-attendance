@@ -23,6 +23,8 @@ namespace register_app.Services
         Task DeleteAsync(AttendeeDeleteViewModel model, ClaimsPrincipal user);
 
         Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key);
+
+        Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User)
     }
 
     public class AttendeeService : IAttendeeService
@@ -209,6 +211,33 @@ namespace register_app.Services
 
             var model = Mapper.Map<AttendeeViewModel>(attendee_.Event);
             return model;
+        }
+
+        public async Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User)
+        {
+            var event_ = await Context.Events
+                .Include(x => x.Attendees)
+                .FirstOrDefaultAsync(x => x.FormId == form_id);
+
+            if (event_ == null)
+            {
+                throw new ArgumentNullException(nameof(event_));
+            }
+
+
+            foreach (var attendee in event_.Attendees)
+            {
+                var find_attendee = attendees.Find(x => x.Email == attendee.Email);
+
+                if (find_attendee == null)
+                {
+                    find_attendee.EventId = event_.Id;
+                    await CreateAsync(find_attendee, User);
+                }
+            }
+
+            return;
+
         }
     }
 }
