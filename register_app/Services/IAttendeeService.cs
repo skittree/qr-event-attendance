@@ -25,7 +25,7 @@ namespace register_app.Services
 
         Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key);
 
-        Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User);
+        Task RefreshAttendeesAsync(string form_id, ClaimsPrincipal User);
     }
 
     public class AttendeeService : IAttendeeService
@@ -41,12 +41,14 @@ namespace register_app.Services
         public AttendeeService(ApplicationDbContext context,
             IMapper mapper,
             UserManager<IdentityUser> userManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            IFormService formService)
         {
             Context = context;
             Mapper = mapper;
             UserManager = userManager;
             EmailService = emailService;
+            FormService = formService;
         }
 
         public async Task<List<AttendeeViewModel>> GetIndexViewModelAsync(int id)
@@ -216,8 +218,9 @@ namespace register_app.Services
             return model;
         }
 
-        public async Task RefreshAttendeesAsync(List<AttendeeCreateViewModel> attendees, string form_id, ClaimsPrincipal User)
+        public async Task RefreshAttendeesAsync(string form_id, ClaimsPrincipal User)
         {
+            var attendees = await FormService.GetFormResponsesAsync(form_id);
             var event_ = await Context.Events
                 .Include(x => x.Attendees)
                 .FirstOrDefaultAsync(x => x.FormId == form_id);
