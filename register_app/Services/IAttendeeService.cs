@@ -267,13 +267,11 @@ namespace register_app.Services
             foreach (var attendee in attendees)
             {
                 var find_attendee = event_.Attendees.FirstOrDefault(x => x.Email == attendee.Email);
-
                 if (find_attendee == null)
                 {
-                    find_attendee.EventId = event_.Id;
-                    if (new EmailAddressAttribute().IsValid(find_attendee.Email))
-                        await CreateAutomaticAsync(find_attendee); 
-                    
+                    attendee.EventId = event_.Id;
+                    if (new EmailAddressAttribute().IsValid(attendee.Email))
+                        await CreateAutomaticAsync(attendee);
                 }
             }
 
