@@ -7,6 +7,7 @@ using register_app.Data.Roles;
 using register_app.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -232,7 +233,9 @@ namespace register_app.Services
                 if (find_attendee == null)
                 {
                     find_attendee.EventId = event_.Id;
-                    await CreateAsync(find_attendee, User);
+                    if (new EmailAddressAttribute().IsValid(find_attendee.Email))
+                        await CreateAsync(find_attendee, User); 
+                    
                 }
             }
 
