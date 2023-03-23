@@ -19,13 +19,15 @@ namespace register_app.Services
         Task<AttendeeDeleteViewModel> GetDeleteViewModelAsync(int id, ClaimsPrincipal user);
         Task<List<AttendeeViewModel>> GetIndexViewModelAsync(int id);
         Task<AttendeeCreateViewModel> GetCreateViewModelAsync(int? id);
-        Task CreateAsync(AttendeeCreateViewModel model, ClaimsPrincipal user);
+        Task CreateAsync(AttendeeCreateViewModel model, ClaimsPrincipal User);
+
+        Task CreateAutomaticAsync(AttendeeCreateViewModel model);
         Task EditAsync(AttendeeEditViewModel model, ClaimsPrincipal user);
         Task DeleteAsync(AttendeeDeleteViewModel model, ClaimsPrincipal user);
 
         Task<AttendeeViewModel> AuthenticateAttendeeAsync(string key);
 
-        Task RefreshAttendeesAsync(string form_id, ClaimsPrincipal User);
+        Task RefreshAttendeesAsync(string form_id);
     }
 
     public class AttendeeService : IAttendeeService
@@ -138,7 +140,12 @@ namespace register_app.Services
             {
                 throw new ArgumentNullException(nameof(event_));
             }
-
+            if (!User.IsInRole(Roles.Admin) || !User.IsInRole(Roles.Organiser))
+            {
+                
+                throw new ArgumentException("User did not create this event");
+                
+            }
             var newAttendee = Mapper.Map<Attendee>(model);
             newAttendee.Event = event_;
 
@@ -151,6 +158,31 @@ namespace register_app.Services
 
 
         }
+        public async Task CreateAutomaticAsync(AttendeeCreateViewModel model)
+        {
+            var event_ = await Context.Events
+                .Include(x => x.Organiser)
+                .Include(x => x.Attendees)
+                .FirstOrDefaultAsync(x => x.Id == model.EventId);
+
+            if (event_ == null)
+            {
+                throw new ArgumentNullException(nameof(event_));
+            }
+            
+            var newAttendee = Mapper.Map<Attendee>(model);
+            newAttendee.Event = event_;
+
+            newAttendee.Key = Guid.NewGuid().ToString() + DateTime.Now.ToString();
+
+            Context.Attendees.Add(newAttendee);
+            await Context.SaveChangesAsync();
+
+            await EmailService.SendEmail(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime);
+
+
+        }
+
 
         public async Task EditAsync(AttendeeEditViewModel model, ClaimsPrincipal user)
         {
@@ -218,7 +250,7 @@ namespace register_app.Services
             return model;
         }
 
-        public async Task RefreshAttendeesAsync(string form_id, ClaimsPrincipal User)
+        public async Task RefreshAttendeesAsync(string form_id)
         {
             var attendees = await FormService.GetFormResponsesAsync(form_id);
             var event_ = await Context.Events
@@ -239,7 +271,7 @@ namespace register_app.Services
                 {
                     find_attendee.EventId = event_.Id;
                     if (new EmailAddressAttribute().IsValid(find_attendee.Email))
-                        await CreateAsync(find_attendee, User); 
+                        await CreateAutomaticAsync(find_attendee); 
                     
                 }
             }
