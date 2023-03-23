@@ -16,15 +16,15 @@ namespace register_app.ApiControllers
     [ApiController]
     public class WatchController : ControllerBase
     {
-        private IAttendeeService AttendeeService { get; }
+        private IFormService FormService { get; }
 
-        public WatchController(IAttendeeService attendeeService)
+        public WatchController(IFormService formService)
         {
-            AttendeeService = attendeeService;
+            FormService = formService;
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] JObject payload)
+        public async Task<IActionResult> Post([FromBody] JObject payload)
         {
             if (payload == null)
             {
@@ -32,8 +32,9 @@ namespace register_app.ApiControllers
             }
             try
             {
-                string formId = payload["formId"].ToString();
+                string formId = payload["message"]["attributes"]["formId"].ToString();
                 //add function here to update list of attendees for an event (connected to formid) and send emails to all new participants
+                await FormService.GetFormResponsesAsync(formId);
                 return Ok();
             }
             catch (ArgumentNullException ae)

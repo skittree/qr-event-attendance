@@ -24,11 +24,12 @@ namespace register_app.Services
 {
     public interface IFormService
     {
-        Task<List<File>> GetAllFormFilesAsync(ClaimsPrincipal user); //drive api called once
-        Task<List<Form>> GetAllFormsAsync(ClaimsPrincipal user); //drive api called once + forms api called for every form 
-        Task<Form> GetFormAsync(ClaimsPrincipal user, string id); //forms api called
-        Task<string> CreateFormAsync(ClaimsPrincipal user, EventCreateViewModel model); 
-        Task<IdentityResult> SetRefreshTokenAsync(ClaimsPrincipal user, string new_token);
+        Task<List<File>> GetAllFormFilesAsync(); //drive api called once
+        Task<List<Form>> GetAllFormsAsync(); //drive api called once + forms api called for every form 
+        Task<Form> GetFormAsync(string id); //forms api called
+        Task<string> CreateFormAsync(EventCreateViewModel model); 
+        Task<IdentityResult> SetRefreshTokenAsync(string new_token);
+        Task<List<AttendeeCreateViewModel>> GetFormResponsesAsync(string formid);
 
     }
     public class FormService : IFormService
@@ -72,9 +73,9 @@ namespace register_app.Services
             return userCredential;
         }
 
-        private async Task<string> GetRefreshTokenAsync(ClaimsPrincipal user)
+        private async Task<string> GetRefreshTokenAsync()
         {
-            IdentityUser context_user = await UserManager.GetUserAsync(user);
+            IdentityUser context_user = await UserManager.FindByNameAsync("admin");
             var refresh_token = await UserManager.GetAuthenticationTokenAsync(
                 context_user,
                 GoogleOpenIdConnectDefaults.AuthenticationScheme,
@@ -88,9 +89,9 @@ namespace register_app.Services
             return refresh_token;
         }
 
-        public async Task<IdentityResult> SetRefreshTokenAsync(ClaimsPrincipal user, string new_token)
+        public async Task<IdentityResult> SetRefreshTokenAsync(string new_token)
         {
-            IdentityUser context_user = await UserManager.GetUserAsync(user);
+            IdentityUser context_user = await UserManager.FindByNameAsync("admin");
             var result = await UserManager.SetAuthenticationTokenAsync(
                 context_user, 
                 GoogleOpenIdConnectDefaults.AuthenticationScheme, 
@@ -99,9 +100,9 @@ namespace register_app.Services
             return result;
         }
 
-        private async Task<FormsService> CreateFormsServiceAsync(ClaimsPrincipal user)
+        private async Task<FormsService> CreateFormsServiceAsync()
         {
-            var refresh_token = await GetRefreshTokenAsync(user);
+            var refresh_token = await GetRefreshTokenAsync();
             UserCredential cred = await GetCredentialAsync(refresh_token);
             var service = new FormsService(new BaseClientService.Initializer
             {
@@ -110,9 +111,9 @@ namespace register_app.Services
             return service;
         }
 
-        private async Task<DriveService> CreateDriveServiceAsync(ClaimsPrincipal user)
+        private async Task<DriveService> CreateDriveServiceAsync()
         {
-            var refresh_token = await GetRefreshTokenAsync(user);
+            var refresh_token = await GetRefreshTokenAsync();
             UserCredential cred = await GetCredentialAsync(refresh_token);
             var service = new DriveService(new BaseClientService.Initializer
             {
@@ -121,20 +122,9 @@ namespace register_app.Services
             return service;
         }
 
-        private async Task<PubsubService> CreatePubsubServiceAsync(ClaimsPrincipal user)
+        public async Task<string> CreateFormAsync(EventCreateViewModel model)
         {
-            var refresh_token = await GetRefreshTokenAsync(user);
-            UserCredential cred = await GetCredentialAsync(refresh_token);
-            var service = new PubsubService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = cred
-            });
-            return service;
-        }
-
-        public async Task<string> CreateFormAsync(ClaimsPrincipal user, EventCreateViewModel model)
-        {
-            var service = await CreateFormsServiceAsync(user);
+            var service = await CreateFormsServiceAsync();
 
             Form form = new Form {
                 Info = new Info {
@@ -192,14 +182,14 @@ namespace register_app.Services
             };
 
             await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
-            await AddWatchAsync(user, formid);
+            await AddWatchAsync(formid);
 
             return formid;
         }
 
-        private async Task<Watch> AddWatchAsync(ClaimsPrincipal user, string formid)
+        private async Task<Watch> AddWatchAsync(string formid)
         {
-            var service = await CreateFormsServiceAsync(user);
+            var service = await CreateFormsServiceAsync();
 
             // Set up the watch request.
             var watchRequest = service.Forms.Watches.Create(new CreateWatchRequest()
@@ -222,26 +212,43 @@ namespace register_app.Services
             return response;
         }
 
-        public async Task<Form> GetFormAsync(ClaimsPrincipal user, string id)
+        public async Task<Form> GetFormAsync(string id)
         {
-            var service = await CreateFormsServiceAsync(user);
+            var service = await CreateFormsServiceAsync();
             var form = await service.Forms.Get(id).ExecuteAsync();
             return form;
         }
 
         //get all files that are forms from the drive
-        public async Task<List<File>> GetAllFormFilesAsync(ClaimsPrincipal user)
+        public async Task<List<File>> GetAllFormFilesAsync()
         {
-            var service = await CreateDriveServiceAsync(user);
+            var service = await CreateDriveServiceAsync();
             var files = await service.Files.List().ExecuteAsync();
             var forms = files.Files.Where(x => x.MimeType == "application/vnd.google-apps.form").ToList();
             return forms;
         }
 
-        public async Task<List<Form>> GetAllFormsAsync(ClaimsPrincipal user)
+        public async Task<List<AttendeeCreateViewModel>> GetFormResponsesAsync(string formid)
         {
-            var files = await GetAllFormFilesAsync(user);
-            var service = await CreateFormsServiceAsync(user);
+            var service = await CreateFormsServiceAsync();
+            var response_list = await service.Forms.Responses.List(formid).ExecuteAsync();
+            var responses = response_list.Responses;
+            List<AttendeeCreateViewModel> viewmodels = new List<AttendeeCreateViewModel>();
+            foreach (var response in responses)
+            {
+                AttendeeCreateViewModel model = new AttendeeCreateViewModel();
+                var answers = response.Answers.Values.ToArray();
+                model.Email = answers[1].TextAnswers.Answers[0].Value;
+                model.Name = answers[0].TextAnswers.Answers[0].Value;
+                viewmodels.Add(model);
+            }
+            return viewmodels;
+        }
+
+        public async Task<List<Form>> GetAllFormsAsync()
+        {
+            var files = await GetAllFormFilesAsync();
+            var service = await CreateFormsServiceAsync();
             List<Form> forms = new List<Form>();
             foreach (var file in files)
             {

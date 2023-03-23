@@ -28,6 +28,7 @@ namespace register_app.Configuration
             CreateMap<Attendee, AttendeeViewModel>();
             CreateMap<Attendee, AttendeeEditViewModel>();
             CreateMap<Attendee, AttendeeDeleteViewModel>();
+
             CreateMap<AttendeeCreateViewModel, Attendee>();
             CreateMap<AttendeeEditViewModel, Attendee>();
 

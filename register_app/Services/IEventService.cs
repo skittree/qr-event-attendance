@@ -43,6 +43,12 @@ namespace register_app.Services
             FormService = formService;
         }
 
+/*        public async Task<> UpdateEventFromForm(string formid) 
+        {
+            var event = Context.Events
+                .Include()
+        }*/
+
         public async Task<List<EventViewModel>> GetIndexViewModelAsync()
         {
             var events = await Context.Events
@@ -131,7 +137,7 @@ namespace register_app.Services
 
             var newEvent = Mapper.Map<Event>(model);
             newEvent.Organiser = user;
-            newEvent.FormId = await FormService.CreateFormAsync(User, model);
+            newEvent.FormId = await FormService.CreateFormAsync(model);
 
             Context.Events.Add(newEvent);
             await Context.SaveChangesAsync();

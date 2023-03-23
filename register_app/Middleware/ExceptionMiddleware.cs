@@ -41,7 +41,7 @@ namespace register_app.Middleware
             if (authResult.Succeeded)
             {
                 var newRefreshToken = authResult.Properties.GetTokenValue("refresh_token");
-                await formService.SetRefreshTokenAsync(context.User, newRefreshToken);
+                await formService.SetRefreshTokenAsync(newRefreshToken);
             }
         }
     }

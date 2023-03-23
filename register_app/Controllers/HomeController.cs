@@ -30,7 +30,7 @@ namespace register_app.Controllers
         [Authorize]
         public async Task<IActionResult> Privacy()
         {
-            ViewBag.Forms = await FormService.GetAllFormsAsync(HttpContext.User);
+            ViewBag.Forms = await FormService.GetAllFormsAsync();
             return View();
         }
 
