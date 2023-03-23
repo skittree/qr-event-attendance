@@ -8,6 +8,7 @@ using register_app.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -265,7 +266,7 @@ namespace register_app.Services
 
             foreach (var attendee in attendees)
             {
-                var find_attendee = event_.Attendees.Find(x => x.Email == attendee.Email);
+                var find_attendee = event_.Attendees.FirstOrDefault(x => x.Email == attendee.Email);
 
                 if (find_attendee == null)
                 {
