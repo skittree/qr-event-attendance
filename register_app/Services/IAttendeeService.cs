@@ -263,7 +263,7 @@ namespace register_app.Services
             }
 
 
-            foreach (var attendee in event_.Attendees)
+            foreach (var attendee in attendees)
             {
                 var find_attendee = attendees.Find(x => x.Email == attendee.Email);
 
