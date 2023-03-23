@@ -36,6 +36,8 @@ namespace register_app.Services
 
         private IEmailService EmailService { get; }
 
+        private IFormService FormService { get; }
+
         public AttendeeService(ApplicationDbContext context,
             IMapper mapper,
             UserManager<IdentityUser> userManager,
@@ -143,7 +145,7 @@ namespace register_app.Services
             Context.Attendees.Add(newAttendee);
             await Context.SaveChangesAsync();
 
-            await EmailService.SendEmail(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime, User);
+            await EmailService.SendEmail(newAttendee.Email, newAttendee.Name, newAttendee.Key, event_.Name, event_.StartTime);
 
 
         }

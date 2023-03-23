@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using register_app.ViewModels;
 using Google.Apis.Pubsub.v1;
+using Google.Apis.Gmail.v1;
 
 namespace register_app.Services
 {
@@ -27,8 +28,10 @@ namespace register_app.Services
         Task<List<File>> GetAllFormFilesAsync(); //drive api called once
         Task<List<Form>> GetAllFormsAsync(); //drive api called once + forms api called for every form 
         Task<Form> GetFormAsync(string id); //forms api called
-        Task<string> CreateFormAsync(EventCreateViewModel model); 
+        Task<string> CreateFormAsync(EventCreateViewModel model);
         Task<IdentityResult> SetRefreshTokenAsync(string new_token);
+
+        Task<GmailService> GetGmailService();
         Task<List<AttendeeCreateViewModel>> GetFormResponsesAsync(string formid);
 
     }
@@ -116,6 +119,17 @@ namespace register_app.Services
             var refresh_token = await GetRefreshTokenAsync();
             UserCredential cred = await GetCredentialAsync(refresh_token);
             var service = new DriveService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = cred
+            });
+            return service;
+        }
+
+        public async Task<GmailService> GetGmailService()
+        {
+            var refresh_token = await GetRefreshTokenAsync();
+            UserCredential cred = await GetCredentialAsync(refresh_token);
+            var service = new GmailService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = cred
             });
