@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using register_app.DtoModels;
+using register_app.Hubs;
 using register_app.Services;
 using System;
 using System.Collections.Generic;
@@ -15,10 +17,12 @@ namespace register_app.ApiControllers
     public class CodeController : ControllerBase
     {
         private IAttendeeService AttendeeService { get; }
+        private IHubContext<SecurityHub> SecurityHub { get; }
 
-        public CodeController(IAttendeeService attendeeService)
+        public CodeController(IAttendeeService attendeeService, IHubContext<SecurityHub> securityHub)
         {
             AttendeeService = attendeeService;
+            SecurityHub = securityHub;
         }
 
         [HttpPost]
@@ -31,6 +35,9 @@ namespace register_app.ApiControllers
             try
             {
                 var attendee = await AttendeeService.AuthenticateAttendeeAsync(model.Key);
+
+                // Send a message to all clients with the "Security" role
+                await SecurityHub.Clients.All.SendAsync("ReceiveSecurityInfo", attendee.Name);
                 return Ok();
             }
             catch (ArgumentNullException ae)

@@ -176,7 +176,15 @@ namespace register_app.Services
                             },
                             Location = new Location { Index = 0 }
                         }
-                    },
+                    }
+                }
+            };
+
+            await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
+
+            update = new BatchUpdateFormRequest
+            {
+                Requests = new List<Request> {
                     new Request {
                         CreateItem = new CreateItemRequest {
                             Item = new Item {
@@ -197,6 +205,8 @@ namespace register_app.Services
 
             await service.Forms.BatchUpdate(update, formid).ExecuteAsync();
             await AddWatchAsync(formid);
+
+            await GetFormAsync(formid);
 
             return formid;
         }
@@ -252,8 +262,17 @@ namespace register_app.Services
             {
                 AttendeeCreateViewModel model = new AttendeeCreateViewModel();
                 var answers = response.Answers.Values.ToArray();
-                model.Email = answers[1].TextAnswers.Answers[0].Value;
-                model.Name = answers[0].TextAnswers.Answers[0].Value;
+                var name = answers[0].TextAnswers.Answers[0].Value;
+                if (name.Contains("@"))
+                {
+                    model.Email = answers[0].TextAnswers.Answers[0].Value;
+                    model.Name = answers[1].TextAnswers.Answers[0].Value;
+                }
+                else
+                {
+                    model.Email = answers[1].TextAnswers.Answers[0].Value;
+                    model.Name = answers[0].TextAnswers.Answers[0].Value;
+                }
                 viewmodels.Add(model);
             }
             return viewmodels;

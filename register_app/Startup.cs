@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using register_app.Configuration;
 using register_app.Data;
 using register_app.Data.Roles;
+using register_app.Hubs;
 using register_app.Middleware;
 using register_app.Services;
 using System;
@@ -89,6 +91,8 @@ namespace register_app
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IAdminService, AdminService>();
             services.AddControllers().AddNewtonsoftJson();
+            services.AddSignalR();
+            //services.AddSingleton<IHubContext<SecurityHub>, SecurityHub>();
 
             InitializeRoles(services);
             InitializeAdmin(services);
@@ -125,6 +129,7 @@ namespace register_app
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
+                endpoints.MapHub<SecurityHub>("/securityHub");
             });
             
         }
