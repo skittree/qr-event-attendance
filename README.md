@@ -1,2 +1,2 @@
 # register_app
-Application for registering and quthorising SAS Open Event Attendees
+Application for registering and authorising SAS Open Event Attendees
